@@ -13,5 +13,21 @@ UCLASS()
 class PINGPONG_API APingPongGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+protected:
+	UPROPERTY()
+	class APingPongPlayerController* Player1 = NULL;
+	UPROPERTY()
+	APingPongPlayerController* Player2 = NULL;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	class APlayerStart* PlayerStart1;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	APlayerStart* PlayerStart2;
+
+public:
+	APingPongGameModeBase();
+
+	virtual void BeginPlay() override;
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 };
