@@ -4,15 +4,27 @@
 #include "PingPongPlayerController.h"
 
 #include "PingPongPlatform.h"
+#include "PlayerPawn.h"
+#include "ScoreWidget.h"
+#include "Blueprint/UserWidget.h"
 
 APingPongPlayerController::APingPongPlayerController()
 {
-	SetReplicates(true);
+	//SetReplicates(true);
+	bReplicates = true;
 }
 
 void APingPongPlayerController::SetStartTransform(FTransform PlayerTransform)
 {
 	StartTransform = PlayerTransform;
+}
+
+void APingPongPlayerController::StartScoreHUD_Implementation()
+{
+	if(WidgetClass)
+		ScoreWidget = CreateWidget<UScoreWidget>(this, WidgetClass);
+	if(ScoreWidget)
+		ScoreWidget->AddToViewport();
 }
 
 void APingPongPlayerController::SetupInputComponent()
@@ -22,12 +34,23 @@ void APingPongPlayerController::SetupInputComponent()
 	InputComponent->BindAxis("Move", this, &APingPongPlayerController::MoveRight);
 }
 
+void APingPongPlayerController::SetPlayerID(EPlayerID InID)
+{
+	PlayerID = InID;
+}
+
 void APingPongPlayerController::MoveRight(float AxisValue)
 {
 	if(AxisValue != 0)
 	{
 		Server_MoveRight(AxisValue);
 	}
+}
+
+void APingPongPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	
 }
 
 bool APingPongPlayerController::Server_MoveRight_Validate(float AxisValue)
@@ -60,6 +83,7 @@ void APingPongPlayerController::Init_Implementation()
 	}
 
 	SpawnPlatform(PlatformClass);
+	StartScoreHUD();
 }
 
 bool APingPongPlayerController::SpawnPlatform_Validate(TSubclassOf<APingPongPlatform> SpawnPlatformClass)

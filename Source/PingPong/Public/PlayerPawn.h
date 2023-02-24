@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "PingPongGate.h"
 #include "PlayerPawn.generated.h"
 
 UCLASS()
@@ -26,6 +27,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

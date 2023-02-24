@@ -18,7 +18,8 @@ APingPongPlatform::APingPongPlatform()
 	PlatformBody->SetupAttachment(RootComponent);
 	PlatformBody->SetIsReplicated(true);
 
-	SetReplicates(true);
+	//SetReplicates(true);
+	bReplicates = true;
     // ReSharper disable once CppVirtualFunctionCallInsideCtor
     SetReplicateMovement(true);
 }

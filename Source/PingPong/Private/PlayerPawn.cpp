@@ -20,7 +20,8 @@ APlayerPawn::APlayerPawn()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	SetReplicates(true);
+	//SetReplicates(true);
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned

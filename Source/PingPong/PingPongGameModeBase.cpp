@@ -3,6 +3,7 @@
 
 #include "PingPongGameModeBase.h"
 
+#include "PingPongGate.h"
 #include "PingPongPlayerController.h"
 #include "PlayerPawn.h"
 #include "GameFramework/PlayerStart.h"
@@ -34,6 +35,39 @@ void APingPongGameModeBase::PostLogin(APlayerController* NewPlayer)
 			PlayerStart2 = dynamic_cast<APlayerStart*>(FoundSpawnPoints[1]);
 	}
 
+	//Setting players' scoring gates if already not set in BP
+	if(GetWorld() && (!Player1ScoringGate || !Player2ScoringGate))
+	{
+		TArray<AActor*> FoundGates;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), APingPongGate::StaticClass(), FoundGates);
+		if(FoundGates.Num() > 1)
+		{
+			float Distance1 = FoundGates[0]->GetDistanceTo(PlayerStart1);
+			float Distance2 = FoundGates[0]->GetDistanceTo(PlayerStart2);
+			
+			//The furthest gate is the one the player has to score with a hit
+			if(Distance1 > Distance2)
+			{
+				Player1ScoringGate = dynamic_cast<APingPongGate*>(FoundGates[0]);
+				Player1ScoringGate->SetScoringPlayer(EPlayerID::Player1);
+				Player2ScoringGate = dynamic_cast<APingPongGate*>(FoundGates[1]);
+				Player2ScoringGate->SetScoringPlayer(EPlayerID::Player2);
+			}
+			else
+			{
+				Player1ScoringGate = dynamic_cast<APingPongGate*>(FoundGates[1]);
+				Player1ScoringGate->SetScoringPlayer(EPlayerID::Player1);
+				Player2ScoringGate = dynamic_cast<APingPongGate*>(FoundGates[0]);
+				Player2ScoringGate->SetScoringPlayer(EPlayerID::Player2);
+			}
+		}
+	}
+	else if(Player1ScoringGate && Player2ScoringGate)
+	{
+		Player1ScoringGate->SetScoringPlayer(EPlayerID::Player1);
+		Player2ScoringGate->SetScoringPlayer(EPlayerID::Player2);
+	}
+
 	//local vars for spawning newly joined player later in this function
 	APingPongPlayerController* currPlayer;
 	APlayerPawn* currPawn;
@@ -43,6 +77,7 @@ void APingPongGameModeBase::PostLogin(APlayerController* NewPlayer)
 	if(!Player1 && PlayerStart1)
 	{
 		Player1 = dynamic_cast<APingPongPlayerController*>(NewPlayer);
+		Player1->SetPlayerID(EPlayerID::Player1);
 		currPlayer = Player1;
 		currSpawnPoint = PlayerStart1;
 		UE_LOG(LogTemp, Warning, TEXT("PingPongGM: Player1 joined"));
@@ -50,6 +85,7 @@ void APingPongGameModeBase::PostLogin(APlayerController* NewPlayer)
 	else if(!Player2 && PlayerStart2)
 	{
 		Player2 = dynamic_cast<APingPongPlayerController*>(NewPlayer);
+		Player2->SetPlayerID(EPlayerID::Player2);
 		currPlayer = Player2;
 		currSpawnPoint = PlayerStart2;
 		UE_LOG(LogTemp, Warning, TEXT("PingPongGM: Player2 joined"));
@@ -68,9 +104,13 @@ void APingPongGameModeBase::PostLogin(APlayerController* NewPlayer)
 
 	//checking if new player has its pawn already spawned. If not, we spawn it
 	currPawn = Cast<APlayerPawn>(currPlayer->GetPawn());
+
+	FActorSpawnParameters Params;
+	Params.Owner = currPlayer;
+	
 	if(!currPawn)
 	{
-		currPawn = GetWorld()->SpawnActor<APlayerPawn>(DefaultPawnClass);
+		currPawn = GetWorld()->SpawnActor<APlayerPawn>(DefaultPawnClass, Params);
 	}
 
 	//Place pawn on spawn point, assign it to player controller and initialize it
@@ -88,3 +128,4 @@ void APingPongGameModeBase::PostLogin(APlayerController* NewPlayer)
 		UE_LOG(LogTemp, Warning, TEXT("PingPongGM: failed to place new player pawn!"));
 	}
 }
+

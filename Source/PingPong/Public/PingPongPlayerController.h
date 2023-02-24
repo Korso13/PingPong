@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PingPongGate.h"
 #include "GameFramework/PlayerController.h"
 #include "PingPongPlayerController.generated.h"
-
 /**
  * 
  */
@@ -13,6 +13,7 @@ UCLASS()
 class PINGPONG_API APingPongPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+	
 protected:
 	UPROPERTY()
 	FTransform StartTransform;
@@ -20,10 +21,22 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TSubclassOf<class APingPongPlatform> PlatformClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSubclassOf<class UScoreWidget> WidgetClass;
+	
 	UPROPERTY()
 	APingPongPlatform* Platform;
-
+	
+	UPROPERTY()
+	class UScoreWidget* ScoreWidget;
+	
 public:
+	
+	UPROPERTY()
+	EPlayerID PlayerID;
+	
+public:
+
 	APingPongPlayerController();
 	
 	UFUNCTION()
@@ -34,8 +47,13 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void SpawnPlatform(TSubclassOf<APingPongPlatform> SpawnPlatformClass);
+	
+	UFUNCTION(Client, Reliable)
+	void StartScoreHUD();
 
 	virtual void SetupInputComponent() override;
+
+	void SetPlayerID(EPlayerID InID);
 
 protected:
 	UFUNCTION()
@@ -43,4 +61,6 @@ protected:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void Server_MoveRight(float AxisValue);
+
+	virtual void BeginPlay() override;
 };
