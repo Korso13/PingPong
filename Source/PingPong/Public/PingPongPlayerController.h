@@ -51,9 +51,9 @@ public:
 	UFUNCTION(Client, Reliable)
 	void StartScoreHUD();
 
-	virtual void SetupInputComponent() override;
-
 	void SetPlayerID(EPlayerID InID);
+	
+	virtual void SetupInputComponent() override;
 
 protected:
 	UFUNCTION()

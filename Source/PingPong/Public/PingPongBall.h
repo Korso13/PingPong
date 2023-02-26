@@ -25,9 +25,16 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Ball Params")
 	UParticleSystem* HitSFX;
 	
-	UPROPERTY(Replicated)
-	bool bIsMoving = true;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
+	bool bIsMoving = false;
 
+public:
+	bool IsMoving() const
+	{
+		return bIsMoving;
+	}
+
+protected:
 	UPROPERTY(Replicated)
 	int32 ScoringPower = 1;
 	

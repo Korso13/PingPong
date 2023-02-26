@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "4.27",
+	"EngineAssociation": "{946ED1AD-4B98-A236-DFF9-D2A6D33359EB}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -16,8 +16,13 @@
 	],
 	"Plugins": [
 		{
-			"Name": "ScooterUtils",
-			"Enabled": true
+			"Name": "SteamVR",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Win32",
+				"Win64",
+				"Linux"
+			]
 		}
 	]
 }

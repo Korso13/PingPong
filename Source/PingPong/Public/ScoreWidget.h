@@ -22,6 +22,8 @@ protected:
 	UTextBlock* EnemyScore;
 	UPROPERTY(BlueprintReadWrite, meta=(BindWidget))
 	UTextBlock* BallScore;
+	UPROPERTY(BlueprintReadWrite, meta=(BindWidget))
+	class UBorder* Wait2PlayerNotificationBox;
 
 	UPROPERTY()
 	class APingPongPlayerController* OwningPlayer = nullptr;
@@ -30,6 +32,11 @@ protected:
 	UPROPERTY()
 	TArray<class APingPongGate*> Gates;
 
+public:
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShow2PlayerWaitNotification;
+	
 protected:
 	void Init();
 	
@@ -37,4 +44,8 @@ public:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	
+	/*virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	*/
+
 };

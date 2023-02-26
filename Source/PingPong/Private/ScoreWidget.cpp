@@ -6,8 +6,10 @@
 #include "PingPongBall.h"
 #include "PingPongGate.h"
 #include "PingPongPlayerController.h"
+#include "Components/Border.h"
 #include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 //Setting up widget: Getting owning player, in-game gates, putting them in Gates array to get info on the scoring for both players
 void UScoreWidget::Init()
@@ -81,9 +83,18 @@ void UScoreWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		String.AppendInt(Ball->GetAccumulatedScore());
 		BallScore->SetText(FText::FromString(String));
 		String.Empty();
+
+		bShow2PlayerWaitNotification = !Ball->IsMoving();
 	}
 	else //called in case widget has not initialized properly yet
 	{
 		Init();
 	}
 }
+
+/*void UScoreWidget::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UScoreWidget, bShow2PlayerWaitNotification);
+}*/

@@ -17,6 +17,7 @@ protected:
 	UPROPERTY(Replicated)
 	int32 PlayerScore = 0;
 
+protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadWrite, Category="Components")
 	class UBoxComponent* GateScoringCollision;
 
@@ -43,6 +44,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	int32 GetPlayerScore() const {return PlayerScore;};
+
+	void ResetPlayerScore() {PlayerScore = 0;};
 
 	UFUNCTION()
 	void SetScoringPlayer(EPlayerID InPlayerID) {ScoringPlayer = InPlayerID;};

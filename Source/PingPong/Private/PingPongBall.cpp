@@ -38,7 +38,7 @@ void APingPongBall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if(GetNetMode() != ENetMode::NM_Client)
+	if(GetNetMode() != ENetMode::NM_Client && bIsMoving)
 	{
 		Server_Move(DeltaTime);
 	}
@@ -54,6 +54,9 @@ void APingPongBall::ResetBall()
 void APingPongBall::Server_ResetBall_Implementation()
 {
 	SetActorLocation(StartingVector);
+	FRotator RandRotation = GetActorRotation();
+	RandRotation.Yaw = FMath::RandRange(-360, 360);
+	SetActorRotation(RandRotation);
 	ScoringPower = 1;
 }
 
@@ -62,11 +65,13 @@ void APingPongBall::Server_ResetBall_Implementation()
 void APingPongBall::StartMove()
 {
 	Server_StartMove();
+	UE_LOG(LogTemp, Warning, TEXT("Ball: start move"));
 }
 
 void APingPongBall::Server_StartMove_Implementation()
 {
 	bIsMoving = true;
+	UE_LOG(LogTemp, Warning, TEXT("Ball: Server start move"));
 }
 
 bool APingPongBall::Server_StartMove_Validate()
@@ -77,11 +82,13 @@ bool APingPongBall::Server_StartMove_Validate()
 void APingPongBall::StopMove()
 {
 	Server_StopMove();
+	UE_LOG(LogTemp, Warning, TEXT("Ball: stop move"));
 }
 
 void APingPongBall::Server_StopMove_Implementation()
 {
 	bIsMoving = false;
+	UE_LOG(LogTemp, Warning, TEXT("Ball: Server stop move"));
 }
 
 bool APingPongBall::Server_StopMove_Validate()
@@ -107,15 +114,15 @@ void APingPongBall::Server_Move_Implementation(float DeltaTime)
     	UE_LOG(LogTemp, Warning, TEXT("Ball %s Collided with %s"), *GetName(), *hitResult.GetActor()->GetName());
 
     	//get current movement vector, normalize it for further operations
-    	FVector moveVector = forwardVector - currLoc; //possible bug 
+    	FVector moveVector = forwardVector;
 	    moveVector.Normalize();
 
     	//Determine "reset" location - will place projectile there after turning it for a new movement vector
-    	//Possible bug: shouldn't it be negative here?
-	    FVector resetPosition = currLoc + moveVector * DeltaTime * 5 * MovementSpeed;
+    	FVector resetPosition = currLoc + hitResult.ImpactNormal * 5;
 
+    	
 			//Debug arrows
-    		DrawDebugDirectionalArrow(GetWorld(), newLoc + moveVector * 300, newLoc,
+    		DrawDebugDirectionalArrow(GetWorld(), newLoc, newLoc + moveVector * 300,
 		    30, FColor::Yellow, true, 3.f, 0, 3);
 		    FVector impactCorrection = hitResult.ImpactPoint +
 		    hitResult.ImpactNormal * 300;
@@ -134,7 +141,7 @@ void APingPongBall::Server_Move_Implementation(float DeltaTime)
 
     		//Debug arrows
     		DrawDebugDirectionalArrow(GetWorld(), newLoc, newTargetMove, 30,
-			FColor::Yellow, true, 3.f, 0, 3);
+			FColor::Cyan, true, 3.f, 0, 3);
 
     	//SetActorLocation(currLoc);
     	//Move ball back a bit after collision and to set a new coursse of movement
@@ -144,7 +151,9 @@ void APingPongBall::Server_Move_Implementation(float DeltaTime)
     	FRotator currRotation = GetActorRotation();
 		FRotator newRotation = UKismetMathLibrary::FindLookAtRotation(currLoc, newTargetMove);
 		newRotation.Pitch = currRotation.Pitch;
-		newRotation.Yaw = newRotation.Yaw + FMath::RandRange(-10, 10);
+
+    	bool NegativeFlag = FMath::RandBool();
+		newRotation.Yaw = newRotation.Yaw + FMath::RandRange(90, 120) * (NegativeFlag ? 1 : -1);
 		SetActorRotation(newRotation);
     	
 		Multicast_HitEffect();
