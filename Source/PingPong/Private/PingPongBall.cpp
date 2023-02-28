@@ -5,9 +5,13 @@
 
 #include "DrawDebugHelpers.h"
 #include "Components/SphereComponent.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
+
+#include "Particles/ParticleSystem.h"
 
 // Sets default values
 APingPongBall::APingPongBall()
@@ -31,6 +35,8 @@ void APingPongBall::BeginPlay()
 	Super::BeginPlay();
 
 	StartingVector = GetActorLocation();
+
+	BallMesh->SetMaterial(0, LoadAsset<UMaterial>(BallMaterial));
 }
 
 // Called every frame
@@ -111,7 +117,7 @@ void APingPongBall::Server_Move_Implementation(float DeltaTime)
 	//check if the ball would collide with anything if moved to a new position
     if(!SetActorLocation(newLoc, true, &hitResult))
     {
-    	UE_LOG(LogTemp, Warning, TEXT("Ball %s Collided with %s"), *GetName(), *hitResult.GetActor()->GetName());
+    	//UE_LOG(LogTemp, Warning, TEXT("Ball %s Collided with %s"), *GetName(), *hitResult.GetActor()->GetName());
 
     	//get current movement vector, normalize it for further operations
     	FVector moveVector = forwardVector;
@@ -169,6 +175,11 @@ bool APingPongBall::Server_Move_Validate(float DeltaTime)
 //---------------------------------------------------------------------------------------------------
 void APingPongBall::Multicast_HitEffect_Implementation()
 {
+	if(!HitSFX)
+	{
+		HitSFX = LoadObject<UParticleSystem>(NULL, *PathToExplosionSFX);
+	}
+	
 	if(GetWorld() && HitSFX)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitSFX, GetActorLocation());
@@ -185,4 +196,24 @@ void APingPongBall::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(APingPongBall, ScoringPower);
 }
 
+
+//Asset-loading template function
+template <class T>
+T* APingPongBall::LoadAsset(TSoftObjectPtr<T>& AssetRef)
+{
+	if(AssetRef.IsPending())
+	{
+		const FSoftObjectPath& Ref = AssetRef.ToSoftObjectPath();
+		FStreamableManager& StreamableManager = UAssetManager::Get().GetStreamableManager();
+		AssetRef = Cast<T>(StreamableManager.LoadSynchronous(Ref));
+	}
+	if(AssetRef.IsValid())
+	{
+		return AssetRef.Get();
+	}
+	else
+	{
+		return nullptr;
+	}
+}
 

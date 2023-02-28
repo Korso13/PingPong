@@ -19,14 +19,20 @@ protected:
 	class USphereComponent* BallCollision;
 	UPROPERTY(BlueprintReadWrite, VisibleDefaultsOnly, Category="Components")
 	UStaticMeshComponent* BallMesh;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	TSoftObjectPtr<UMaterial> BallMaterial;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Ball Params")
 	float MovementSpeed = 100;
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Ball Params")
+
+	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category="Ball Params")
 	UParticleSystem* HitSFX;
+
+	FString PathToExplosionSFX = "/Game/StarterContent/Particles/P_Explosion.P_Explosion";
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	bool bIsMoving = false;
+
 
 public:
 	bool IsMoving() const
@@ -60,6 +66,10 @@ protected:
 
 	UFUNCTION(NetMulticast, Unreliable)
 	void Multicast_HitEffect();
+
+	template<class T>
+	T* LoadAsset(TSoftObjectPtr<T>& AssetRef);
+	
 	
 public:	
 	// Called every frame
@@ -79,3 +89,6 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 };
+
+
+
