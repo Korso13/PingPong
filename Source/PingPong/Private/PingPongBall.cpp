@@ -37,7 +37,10 @@ void APingPongBall::BeginPlay()
 	StartingVector = GetActorLocation();
 
 	BallMesh->SetMaterial(0, LoadAsset<UMaterial>(BallMaterial));
+
+	LoadAssetsAsync<UParticleSystem>(HitSFXRef, SFXAssetHandle);
 }
+
 
 // Called every frame
 void APingPongBall::Tick(float DeltaTime)
@@ -175,10 +178,10 @@ bool APingPongBall::Server_Move_Validate(float DeltaTime)
 //---------------------------------------------------------------------------------------------------
 void APingPongBall::Multicast_HitEffect_Implementation()
 {
-	if(!HitSFX)
+	/*if(!HitSFX)
 	{
 		HitSFX = LoadObject<UParticleSystem>(NULL, *PathToExplosionSFX);
-	}
+	}*/
 	
 	if(GetWorld() && HitSFX)
 	{
@@ -214,6 +217,28 @@ T* APingPongBall::LoadAsset(TSoftObjectPtr<T>& AssetRef)
 	else
 	{
 		return nullptr;
+	}
+}
+
+template <class T>
+void APingPongBall::LoadAssetsAsync(TSoftObjectPtr<T>& AssetReference, TSharedPtr<FStreamableHandle>& AssetHandle)
+{
+	FStreamableDelegate AssetLoadDelegate;
+	AssetLoadDelegate.BindUObject(this, &APingPongBall::OnAssetsLoaded, &AssetHandle);
+
+	FStreamableManager& StreamableManager = UAssetManager::Get().GetStreamableManager();
+	AssetHandle = StreamableManager.RequestAsyncLoad(AssetReference.ToSoftObjectPath(), AssetLoadDelegate);
+}
+
+void APingPongBall::OnAssetsLoaded(TSharedPtr<FStreamableHandle>* AssetHandle)
+{
+	if(!AssetHandle->Get()->GetLoadedAsset())
+		return;
+	
+	if(AssetHandle->Get()->GetLoadedAsset()->GetClass() == UParticleSystem::StaticClass())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Ball: Class check passed!"));
+		HitSFX = Cast<UParticleSystem>(AssetHandle->Get()->GetLoadedAsset());
 	}
 }
 

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/StreamableManager.h"
 #include "GameFramework/Actor.h"
 #include "PingPongBall.generated.h"
-
 
 UCLASS()
 class PINGPONG_API APingPongBall : public AActor
@@ -28,22 +28,19 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category="Ball Params")
 	UParticleSystem* HitSFX;
 
-	FString PathToExplosionSFX = "/Game/StarterContent/Particles/P_Explosion.P_Explosion";
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	TSoftObjectPtr<UParticleSystem> HitSFXRef;
+
+	TSharedPtr<FStreamableHandle> SFXAssetHandle;
+
+	//FString PathToExplosionSFX = "/Game/StarterContent/Particles/P_Explosion.P_Explosion";
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated)
 	bool bIsMoving = false;
 
-
-public:
-	bool IsMoving() const
-	{
-		return bIsMoving;
-	}
-
-protected:
 	UPROPERTY(Replicated)
 	int32 ScoringPower = 1;
-	
+
 public:	
 	// Sets default values for this actor's properties
 	APingPongBall();
@@ -69,7 +66,11 @@ protected:
 
 	template<class T>
 	T* LoadAsset(TSoftObjectPtr<T>& AssetRef);
+
+	template<class T>
+	void LoadAssetsAsync(TSoftObjectPtr<T>& AssetReference, TSharedPtr<FStreamableHandle>& AssetHandle);
 	
+	void OnAssetsLoaded(TSharedPtr<FStreamableHandle>* AssetHandle);
 	
 public:	
 	// Called every frame
@@ -88,6 +89,11 @@ public:
 	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	bool IsMoving() const
+	{
+		return bIsMoving;
+	}
+	
 };
 
 

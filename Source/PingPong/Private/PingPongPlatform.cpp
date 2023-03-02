@@ -4,6 +4,8 @@
 #include "PingPongPlatform.h"
 
 #include "Components/BoxComponent.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 
 // Sets default values
 APingPongPlatform::APingPongPlatform()
@@ -28,7 +30,26 @@ APingPongPlatform::APingPongPlatform()
 void APingPongPlatform::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	LoadAssetsAsync();
+}
+
+void APingPongPlatform::LoadAssetsAsync()
+{
+	FStreamableDelegate AssetLoadDelegate;
+	AssetLoadDelegate.BindUObject(this, &APingPongPlatform::OnAssetsLoaded);
+
+	FStreamableManager& StreamableManager = UAssetManager::Get().GetStreamableManager();
+	AssetHandle = StreamableManager.RequestAsyncLoad(PlatformMeshRef.ToSoftObjectPath(), AssetLoadDelegate);
+}
+
+void APingPongPlatform::OnAssetsLoaded()
+{
+	UStaticMesh* Mesh = Cast<UStaticMesh>(AssetHandle.Get()->GetLoadedAsset());
+	if(Mesh)
+	{
+		PlatformBody->SetStaticMesh(Mesh);
+	}
 }
 
 // Called every frame
